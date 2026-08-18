@@ -1,0 +1,71 @@
+# Gizmo – Secure End-to-End Encrypted Mobile Messaging
+## Implementation Walkthrough
+
+Gizmo is a production-ready, cross-platform mobile messaging application built with **Flutter (Mobile)** and **NestJS (Backend)** with **SQLite / PostgreSQL**.
+
+---
+
+## 🛠 Features Implemented
+
+### 1. Cryptography Architecture (`mobile/lib/core/crypto/crypto_service.dart`)
+- **Standard Security**: AES-256-GCM authenticated encryption with 96-bit unique nonces.
+- **High Security**: ChaCha20-Poly1305 high-performance stream cipher.
+- **Maximum Security**: Hybrid Elliptic Curve Diffie-Hellman (X25519) + HKDF-SHA256 key derivation + AES-256-GCM (per-message ephemeral key pairs for perfect forward secrecy).
+- **Safety Number Fingerprint**: 60-digit SHA-256 identity verification string formatted into 12 blocks of 5 digits.
+
+### 2. Hardware Secure Storage & Auth (`mobile/lib/core/auth/security_service.dart`)
+- **Device Security**: Long-term private key stored in Android Keystore / Apple Secure Enclave.
+- **Gizmo PIN KEK**: Fallback 6-digit PIN with PBKDF2 key derivation (100,000 iterations) wrapping private keys in AES-256-GCM.
+- **Biometric Integration**: `local_auth` prompt modal before unlocking keys for encryption or decryption.
+
+### 3. NestJS Server (`backend/src/`)
+- **Modules**: `AuthModule` (OTP verification & JWT token), `UsersModule` (registration & public key distribution), `MessagesModule` (ciphertext storage & history), `ChatGateway` (WebSocket real-time relay, presence, delivery status `SENT` → `DELIVERED` → `READ`, typing indicators).
+
+### 4. Flutter UI (`mobile/lib/features/`)
+- **Dark Mode Glassmorphic Theme**: Slate 900 `#0F172A`, Sky `#38BDF8`, Amber `#F59E0B`, Emerald `#10B981`.
+- **Onboarding Flow**: Mobile OTP verification & Security option setup screen (Device Security vs Gizmo PIN).
+- **Chat Screen**: Interactive message list supporting plaintext & 🔒 Encrypted message cards (`Tap to Decrypt`), bottom input bar with 🔒 Encryption toggle and security level selector modal.
+- **Safety Number Screen**: Displays 60-digit fingerprint comparison and QR code generator/scanner.
+- **Security Settings**: Dedicated screen for authentication triggers, default security levels, and screenshot protection toggles.
+
+---
+
+## 🧪 Verification Results
+
+### Automated Test Suite (`mobile/test/crypto_service_test.dart`)
+Ran `flutter test` - **All 5 tests passed successfully**:
+- `Standard Security (AES-256-GCM) Encrypt & Decrypt Round-Trip` ✅
+- `High Security (ChaCha20-Poly1305) Encrypt & Decrypt Round-Trip` ✅
+- `Maximum Security (X25519 ECDH + HKDF + AES-GCM) Round-Trip` ✅
+- `Safety Number Computation (60-digit formatted string)` ✅
+- `GizmoApp UI initial render test` ✅
+
+### Backend Build Verification (`backend/`)
+Ran `npm run build` - **NestJS compiled cleanly without errors** (`nest build` completed successfully).
+
+---
+
+## 🚀 How to Run Gizmo Locally
+
+### 1. Start the NestJS Backend
+```powershell
+cd c:\Users\ELITEBOOK\Desktop\PROFPROJECTS\Algorithmo\backend
+npm run start:dev
+```
+*Server runs at `http://localhost:3000` with WebSocket endpoint `ws://localhost:3000`.*
+
+### 2. Launch the Flutter Mobile App
+```powershell
+cd c:\Users\ELITEBOOK\Desktop\PROFPROJECTS\Algorithmo\mobile
+$env:Path += ";c:\users\elitebook\develop\flutter\bin"
+flutter run
+```
+
+---
+
+### Test Credentials / Demo Workflow
+1. Enter phone number `+1234567890` -> Enter debug OTP `123456`.
+2. Choose **Option 1 (Device Security)** or **Option 2 (Gizmo PIN)**.
+3. Tap on a contact to open the Chat screen.
+4. Type a message, press the 🔒 Lock icon to choose **Maximum Security (X25519 ECDH)**, and send.
+5. Tap the `🔒 Encrypted Message` card to authenticate and decrypt locally to `🔓 Decrypted`!

@@ -1,0 +1,621 @@
+# Build **Gizmo** – A Secure End-to-End Encrypted Mobile Messaging Application
+
+## Project Overview
+
+Build a production-ready mobile messaging application called **Gizmo**. The application must allow users to communicate using their **mobile phone numbers** while providing an additional layer of security by allowing users to encrypt individual messages before they are sent.
+
+Unlike traditional messaging applications where encryption occurs automatically in the background, Gizmo gives users explicit control over encrypting a message. Before an encrypted message is transmitted, the sender must successfully authenticate using either the device's built-in security or a Gizmo-specific security credential. Likewise, the receiver must authenticate before the encrypted message can be decrypted and viewed.
+
+The application should emphasize **privacy, usability, and modern cryptographic best practices**.
+
+---
+
+# Primary Objectives
+
+The application must:
+
+* Register users using their mobile numbers.
+* Support one-to-one messaging.
+* Allow sending both plaintext and encrypted messages.
+* Require authentication before encrypting a message.
+* Require authentication before decrypting an encrypted message.
+* Store only encrypted message content on the server.
+* Implement end-to-end encryption.
+* Use hardware-backed secure key storage where available.
+* Never expose private encryption keys to the backend.
+
+---
+
+# Platform
+
+Develop native-quality mobile applications for:
+
+* Android
+* iOS
+
+Cross-platform development using Flutter is preferred.
+
+---
+
+# Backend
+
+Backend responsibilities include:
+
+* User registration
+* OTP verification
+* Contact discovery
+* Secure message routing
+* Push notifications
+* Delivery acknowledgements
+* Message synchronization
+* Public key distribution
+* User profile management
+
+The backend must **never** have access to plaintext messages.
+
+---
+
+# Authentication
+
+Users register with:
+
+* Mobile phone number
+* OTP verification
+* Display name
+* Optional profile photo
+
+After successful registration, Gizmo prompts the user to configure security.
+
+---
+
+# Security Setup
+
+During onboarding:
+
+Display:
+
+> How would you like to protect encrypted messages?
+
+Option 1 (Recommended)
+
+Use Device Security
+
+Supported methods:
+
+* Fingerprint
+* Face Recognition
+* Device PIN
+* Device Password
+* Device Pattern
+
+This uses:
+
+* Android Keystore
+* Apple Secure Enclave
+
+Option 2
+
+Create Gizmo Security
+
+Supported methods:
+
+* 6-digit PIN
+* Password
+
+The credential protects access to the user's encryption keys.
+
+---
+
+# User Interface
+
+Chat screen layout:
+
+```
+------------------------------------------------------
+ Alice                                 Online
+------------------------------------------------------
+
+ Hello!
+
+ 🔒 Encrypted Message
+
+------------------------------------------------------
+ 😊   Type a message...        🔒         ➤
+------------------------------------------------------
+```
+
+Bottom controls:
+
+Emoji
+
+Message field
+
+Encryption button
+
+Send button
+
+---
+
+# Message Workflow
+
+## Normal Message
+
+User types message.
+
+Presses Send.
+
+Message is transmitted as plaintext within the encrypted transport channel but is **not additionally encrypted by Gizmo's manual encryption workflow**.
+
+---
+
+## Encrypted Message Workflow
+
+User types message.
+
+Presses the lock icon.
+
+An encryption dialog appears.
+
+Example:
+
+```
+Encrypt Message
+
+Choose Security Level
+
+○ Standard Security
+○ High Security
+○ Maximum Security
+
+Cancel          Continue
+```
+
+The user selects a security level.
+
+Presses Continue.
+
+Authentication screen appears.
+
+Example:
+
+```
+Authenticate
+
+Use fingerprint to encrypt.
+
+[ Scan Finger ]
+
+Use PIN Instead
+```
+
+If authentication succeeds:
+
+The application encrypts the message.
+
+The ciphertext is transmitted.
+
+The server receives only ciphertext.
+
+The receiver receives ciphertext.
+
+---
+
+# Receiver Workflow
+
+Receiver opens conversation.
+
+Encrypted message appears as:
+
+```
+🔒 Encrypted Message
+
+High Security
+
+Tap to Decrypt
+```
+
+Receiver taps message.
+
+Authentication screen appears.
+
+```
+Authenticate
+
+Use Face Recognition
+
+Use PIN Instead
+```
+
+Authentication succeeds.
+
+The message is decrypted locally.
+
+Displayed:
+
+```
+Meet me at 6 PM.
+```
+
+---
+
+# Security Levels
+
+Users should **not** choose cryptographic algorithms directly.
+
+Instead, expose simple security levels while mapping them internally to modern cryptographic primitives.
+
+### Standard Security
+
+Uses:
+
+* AES-256-GCM
+
+---
+
+### High Security
+
+Uses:
+
+* ChaCha20-Poly1305
+
+---
+
+### Maximum Security
+
+Uses hybrid encryption:
+
+* X25519 (Elliptic Curve Diffie-Hellman)
+* AES-256-GCM
+
+The implementation should negotiate compatible encryption methods automatically between sender and receiver.
+
+Outdated or weak algorithms (e.g., Blowfish, DES, RC4) must not be offered.
+
+---
+
+# Authentication Flow
+
+Sender:
+
+```
+Type Message
+
+↓
+
+Choose Security Level
+
+↓
+
+Authenticate
+
+↓
+
+Unlock Encryption Keys
+
+↓
+
+Encrypt Message
+
+↓
+
+Send Ciphertext
+```
+
+Receiver:
+
+```
+Receive Ciphertext
+
+↓
+
+Tap Message
+
+↓
+
+Authenticate
+
+↓
+
+Unlock Decryption Keys
+
+↓
+
+Decrypt Locally
+
+↓
+
+Display Plaintext
+```
+
+---
+
+# Message Indicators
+
+Normal message:
+
+```
+Hello
+```
+
+Encrypted message:
+
+```
+🔒 Encrypted Message
+
+High Security
+```
+
+After decryption:
+
+```
+🔓 Decrypted
+```
+
+---
+
+# Message Status
+
+Support:
+
+✓ Sent
+
+✓✓ Delivered
+
+👁 Read
+
+🔒 Encrypted
+
+🔓 Decrypted
+
+---
+
+# Security Settings
+
+Provide a dedicated Security screen.
+
+Settings include:
+
+* Use device authentication
+* Use Gizmo PIN
+* Require authentication before encrypting
+* Require authentication before decrypting
+* Auto-lock conversations
+* Hide message content in notifications
+* Disable screenshots on sensitive screens where supported by the platform
+* App lock
+* Default security level
+
+---
+
+# Contacts
+
+Discover contacts using verified mobile numbers.
+
+Show:
+
+Profile photo
+
+Display name
+
+Phone number
+
+Online status
+
+Last seen (optional)
+
+---
+
+# User Profiles
+
+Allow editing:
+
+* Name
+* Profile photo
+* About
+* Privacy settings
+
+---
+
+# Notifications
+
+Encrypted messages should display:
+
+```
+🔒 Encrypted Message
+
+Open Gizmo to decrypt.
+```
+
+Notification previews must never reveal plaintext for encrypted messages.
+
+---
+
+# Server Architecture
+
+The server must never possess the ability to decrypt user messages.
+
+Flow:
+
+```
+Sender
+
+↓
+
+Encrypt Locally
+
+↓
+
+Ciphertext
+
+↓
+
+Server
+
+↓
+
+Ciphertext
+
+↓
+
+Receiver
+
+↓
+
+Decrypt Locally
+```
+
+The server stores:
+
+* Ciphertext
+* Delivery metadata
+* Sender ID
+* Receiver ID
+* Timestamp
+* Encryption metadata (security level, protocol version)
+
+The server never stores:
+
+* Plaintext
+* Private keys
+* Authentication credentials
+* Biometric information
+
+---
+
+# Cryptographic Key Management
+
+Each user shall have a long-term public/private key pair generated during onboarding.
+
+Requirements:
+
+* Private keys remain on the device.
+* Private keys are stored only in Android Keystore or Apple Secure Enclave (or equivalent secure hardware-backed storage).
+* Public keys are uploaded to the server for discovery.
+* Private keys must never leave the device.
+* Keys are unlocked only after successful user authentication.
+
+---
+
+# End-to-End Encryption Requirements
+
+* Encrypt messages on the sender's device.
+* Decrypt messages only on the receiver's device.
+* The backend cannot decrypt any message.
+* Every encrypted message must include sufficient metadata (protocol version, security level, ephemeral public key where applicable, initialization vector/nonce, authentication tag) for the receiving client to decrypt it safely.
+* Use authenticated encryption to ensure both confidentiality and integrity.
+
+---
+
+# Identity Verification
+
+Implement contact verification to reduce the risk of impersonation or man-in-the-middle attacks.
+
+Provide:
+
+* Safety Number comparison.
+* QR Code verification between contacts.
+
+Once verified, display:
+
+```
+✔ Verified Contact
+```
+
+---
+
+# Trust Indicators
+
+Display clear indicators throughout the interface.
+
+Examples:
+
+🔒 End-to-End Encrypted
+
+✔ Verified Contact
+
+🔓 Successfully Decrypted
+
+⚠ Identity Changed
+
+These indicators should update automatically based on key status and verification state.
+
+---
+
+# Security Requirements
+
+The application must adhere to the following principles:
+
+* End-to-end encryption by default for manually encrypted messages.
+* Private keys never leave the user's device.
+* Authentication unlocks cryptographic keys; biometrics are not used directly as encryption mechanisms.
+* Hardware-backed secure key storage must be used whenever available.
+* The backend stores only encrypted payloads and public keys.
+* Modern, well-vetted cryptographic algorithms must be used.
+* Security negotiation must occur automatically between compatible clients.
+* All communications with the backend must use TLS 1.3 or newer.
+* Protect against replay attacks using nonces and message identifiers.
+* Protect message integrity using authenticated encryption.
+* Rate-limit authentication attempts for Gizmo-specific PINs.
+* Lock access temporarily after repeated failed authentication attempts.
+* Ensure cryptographic operations are performed using trusted libraries rather than custom implementations.
+* Do not expose sensitive information in logs, analytics, or crash reports.
+
+---
+
+# Suggested Technology Stack
+
+## Mobile
+
+* Flutter (Dart)
+
+## Backend
+
+* Node.js with NestJS (preferred) or Spring Boot
+
+## Database
+
+* PostgreSQL
+
+## Real-Time Messaging
+
+* WebSockets or Socket.IO
+
+## Push Notifications
+
+* Firebase Cloud Messaging (Android)
+* Apple Push Notification service (iOS)
+
+## Authentication
+
+* Firebase Phone Authentication (OTP) or an equivalent secure OTP service
+
+## Cryptography
+
+* Google Tink
+* libsodium
+* Platform cryptography APIs
+
+## Secure Storage
+
+* Android Keystore
+* Apple Secure Enclave / Keychain
+
+---
+
+# Deliverable Expectations
+
+Build a complete, production-ready application with:
+
+* Clean, modern UI/UX
+* Responsive layouts
+* Robust authentication
+* Secure key management
+* Reliable message delivery
+* End-to-end encrypted messaging
+* Comprehensive error handling
+* Secure session management
+* Well-structured, maintainable codebase
+* Automated testing for critical security and messaging workflows
+* Clear documentation covering architecture, security model, API contracts, and deployment instructions
+
+The final product should prioritize security, privacy, reliability, and ease of use while following established cryptographic standards and mobile security best practices.
